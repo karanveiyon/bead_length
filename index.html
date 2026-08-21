@@ -1,96 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glass Tube Missing Length Calculator</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Glass Tube Missing Length Calculator</title>
 
-<style>
-    * {
+    <style>
+      * {
         box-sizing: border-box;
-    }
+      }
 
-    body {
+      body {
         margin: 0;
         padding: 20px;
         font-family: Arial, sans-serif;
         background: #f2f2f2;
         color: #222;
-    }
+      }
 
-    .container {
+      .container {
         max-width: 900px;
         margin: auto;
-    }
+      }
 
-    h1 {
+      h1 {
         text-align: center;
         margin-bottom: 8px;
-    }
+      }
 
-    .subtitle {
+      .subtitle {
         text-align: center;
         color: #666;
         margin-bottom: 25px;
-    }
+      }
 
-    .card {
+      .card {
         background: white;
         border-radius: 12px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.10);
-    }
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+      }
 
-    h2 {
+      h2 {
         margin-top: 0;
         border-bottom: 1px solid #ddd;
         padding-bottom: 10px;
-    }
+      }
 
-    .piece-grid {
+      .piece-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
-    }
+      }
 
-    .piece {
+      .piece {
         border: 1px solid #ddd;
         border-radius: 10px;
         padding: 18px;
-    }
+      }
 
-    .piece h3 {
+      .piece h3 {
         margin-top: 0;
-    }
+      }
 
-    label {
+      label {
         display: block;
         font-weight: bold;
         margin-top: 13px;
         margin-bottom: 5px;
-    }
+      }
 
-    input, select {
+      input,
+      select {
         width: 100%;
         padding: 11px;
         border: 1px solid #bbb;
         border-radius: 6px;
         font-size: 16px;
-    }
+      }
 
-    input:focus {
+      input:focus {
         outline: none;
         border-color: #555;
-    }
+      }
 
-    .unit-row {
+      .unit-row {
         display: grid;
         grid-template-columns: 1fr 130px;
         gap: 10px;
-    }
+      }
 
-    button {
+      button {
         width: 100%;
         padding: 14px;
         border: none;
@@ -100,616 +101,644 @@
         font-size: 17px;
         cursor: pointer;
         margin-top: 20px;
-    }
+      }
 
-    button:hover {
+      button:hover {
         background: #444;
-    }
+      }
 
-    .results {
+      .results {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
-    }
+      }
 
-    .result {
+      .result {
         background: #f7f7f7;
         border: 1px solid #ddd;
         padding: 15px;
         border-radius: 8px;
-    }
+      }
 
-    .result .label {
+      .result .label {
         font-size: 13px;
         color: #666;
         margin-bottom: 5px;
-    }
+      }
 
-    .result .value {
+      .result .value {
         font-size: 22px;
         font-weight: bold;
-    }
+      }
 
-    .important {
+      .important {
         background: #fff8dc;
         border-left: 5px solid #d6a700;
         padding: 15px;
         margin-top: 15px;
         border-radius: 5px;
-    }
+      }
 
-    .success {
+      .success {
         background: #e9f7e9;
         border-left: 5px solid #3c9b3c;
         padding: 15px;
         margin-top: 15px;
         border-radius: 5px;
-    }
+      }
 
-    .warning {
+      .warning {
         background: #fff0f0;
         border-left: 5px solid #cc3333;
         padding: 15px;
         margin-top: 15px;
         border-radius: 5px;
-    }
+      }
 
-    .formula {
+      .formula {
         background: #f5f5f5;
         padding: 15px;
         border-radius: 8px;
         font-family: monospace;
         line-height: 1.8;
         overflow-x: auto;
-    }
+      }
 
-    .diagram {
+      .diagram {
         text-align: center;
         padding: 10px;
         overflow-x: auto;
-    }
+      }
 
-    .tube {
+      .tube {
         display: flex;
         align-items: center;
         justify-content: center;
         min-width: 600px;
         margin: 20px auto;
-    }
+        gap: 0;
+      }
 
-    .large-tube {
-        width: 25%;
-        height: 80px;
-        background: #aaa;
-        border: 5px solid #222;
-        border-radius: 50% 8px 8px 50%;
+      .tube-segment {
+        position: relative;
+        min-height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid #222;
+        background: linear-gradient(180deg, #b7b7b7, #9a9a9a);
+        overflow: visible;
+        transition: all 0.3s ease;
+      }
+
+      .tube-segment.large {
+        border-radius: 50% 10px 10px 50%;
         transform: skewY(-5deg);
-    }
+        min-height: 90px;
+      }
 
-    .missing {
-        width: 25%;
-        height: 70px;
+      .tube-segment.small {
+        border-radius: 10px 50% 50% 10px;
+        transform: skewY(4deg);
+        min-height: 75px;
+      }
+
+      .tube-gap {
+        min-height: 76px;
         border-top: 3px dashed #777;
         border-bottom: 3px dashed #777;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #777;
-    }
+        font-weight: bold;
+        letter-spacing: 0.08em;
+        background: repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.35),
+          rgba(255, 255, 255, 0.35) 12px,
+          rgba(240, 240, 240, 0.2) 12px,
+          rgba(240, 240, 240, 0.2) 24px
+        );
+      }
 
-    .small-tube {
-        width: 25%;
-        height: 60px;
-        background: #aaa;
-        border: 5px solid #222;
-        border-radius: 8px 50% 50% 8px;
-        transform: skewY(4deg);
-    }
+      .segment-label {
+        position: absolute;
+        top: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: bold;
+        white-space: nowrap;
+      }
 
-    .note {
+      .segment-diameter {
+        position: absolute;
+        bottom: -26px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        color: #333;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+
+      .tube-summary {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #333;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .note {
         font-size: 13px;
         color: #666;
         margin-top: 5px;
-    }
+      }
 
-    @media (max-width: 700px) {
+      @media (max-width: 700px) {
         .piece-grid,
         .results {
-            grid-template-columns: 1fr;
+          grid-template-columns: 1fr;
         }
 
         body {
-            padding: 10px;
+          padding: 10px;
         }
-    }
-</style>
-</head>
+      }
+    </style>
+  </head>
 
-<body>
+  <body>
+    <div class="container">
+      <h1>Glass Tube Missing Length Calculator</h1>
 
-<div class="container">
-
-    <h1>Glass Tube Missing Length Calculator</h1>
-
-    <div class="subtitle">
+      <div class="subtitle">
         Estimate the missing section of a tapered glass tube
-    </div>
+      </div>
 
-    <div class="card">
-
+      <div class="card">
         <div class="diagram">
-            <div class="tube">
-                <div class="large-tube"></div>
-                <div class="missing">MISSING</div>
-                <div class="small-tube"></div>
+          <div id="tubeDiagram" class="tube">
+            <div id="largeTube" class="tube-segment large">
+              <span class="segment-label">L1</span>
+              <span class="segment-diameter">Ø max → min</span>
             </div>
+            <div id="missingTube" class="tube-gap">MISSING</div>
+            <div id="smallTube" class="tube-segment small">
+              <span class="segment-label">L2</span>
+              <span class="segment-diameter">Ø max → min</span>
+            </div>
+          </div>
 
-            <strong>
-                Total Length = L1 + Missing Length + L2
-            </strong>
+          <div id="tubeSummary" class="tube-summary">
+            Total Length = L1 + Missing Length + L2
+          </div>
         </div>
+      </div>
 
-    </div>
-
-    <div class="card">
-
+      <div class="card">
         <h2>1. Enter Tube Measurements</h2>
 
         <div class="piece-grid">
+          <!-- LARGE PIECE -->
 
-            <!-- LARGE PIECE -->
+          <div class="piece">
+            <h3>Larger Piece</h3>
 
-            <div class="piece">
+            <label> Length L1 </label>
 
-                <h3>Larger Piece</h3>
+            <div class="unit-row">
+              <input
+                type="number"
+                id="L1"
+                step="any"
+                placeholder="Example: 100"
+              />
 
-                <label>
-                    Length L1
-                </label>
-
-                <div class="unit-row">
-                    <input
-                        type="number"
-                        id="L1"
-                        step="any"
-                        placeholder="Example: 100"
-                    >
-
-                    <select id="lengthUnit1">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="inch">inch</option>
-                    </select>
-                </div>
-
-                <label>
-                    Maximum Diameter
-                </label>
-
-                <div class="unit-row">
-                    <input
-                        type="number"
-                        id="D1max"
-                        step="any"
-                        placeholder="Example: 20"
-                    >
-
-                    <select id="diamUnit1">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="inch">inch</option>
-                    </select>
-                </div>
-
-                <label>
-                    Minimum Diameter
-                </label>
-
-                <input
-                    type="number"
-                    id="D1min"
-                    step="any"
-                    placeholder="Example: 18"
-                >
-
+              <select id="lengthUnit1">
+                <option value="mm">mm</option>
+                <option value="cm">cm</option>
+                <option value="inch">inch</option>
+              </select>
             </div>
 
+            <label> Maximum Diameter </label>
 
-            <!-- SMALL PIECE -->
+            <div class="unit-row">
+              <input
+                type="number"
+                id="D1max"
+                step="any"
+                placeholder="Example: 20"
+              />
 
-            <div class="piece">
-
-                <h3>Smaller Piece</h3>
-
-                <label>
-                    Length L2
-                </label>
-
-                <div class="unit-row">
-                    <input
-                        type="number"
-                        id="L2"
-                        step="any"
-                        placeholder="Example: 80"
-                    >
-
-                    <select id="lengthUnit2">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="inch">inch</option>
-                    </select>
-                </div>
-
-                <label>
-                    Maximum Diameter
-                </label>
-
-                <div class="unit-row">
-                    <input
-                        type="number"
-                        id="D2max"
-                        step="any"
-                        placeholder="Example: 16"
-                    >
-
-                    <select id="diamUnit2">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="inch">inch</option>
-                    </select>
-                </div>
-
-                <label>
-                    Minimum Diameter
-                </label>
-
-                <input
-                    type="number"
-                    id="D2min"
-                    step="any"
-                    placeholder="Example: 14"
-                >
-
+              <select id="diamUnit1">
+                <option value="mm">mm</option>
+                <option value="cm">cm</option>
+                <option value="inch">inch</option>
+              </select>
             </div>
 
+            <label> Minimum Diameter </label>
+
+            <input
+              type="number"
+              id="D1min"
+              step="any"
+              placeholder="Example: 18"
+            />
+          </div>
+
+          <!-- SMALL PIECE -->
+
+          <div class="piece">
+            <h3>Smaller Piece</h3>
+
+            <label> Length L2 </label>
+
+            <div class="unit-row">
+              <input
+                type="number"
+                id="L2"
+                step="any"
+                placeholder="Example: 80"
+              />
+
+              <select id="lengthUnit2">
+                <option value="mm">mm</option>
+                <option value="cm">cm</option>
+                <option value="inch">inch</option>
+              </select>
+            </div>
+
+            <label> Maximum Diameter </label>
+
+            <div class="unit-row">
+              <input
+                type="number"
+                id="D2max"
+                step="any"
+                placeholder="Example: 16"
+              />
+
+              <select id="diamUnit2">
+                <option value="mm">mm</option>
+                <option value="cm">cm</option>
+                <option value="inch">inch</option>
+              </select>
+            </div>
+
+            <label> Minimum Diameter </label>
+
+            <input
+              type="number"
+              id="D2min"
+              step="any"
+              placeholder="Example: 14"
+            />
+          </div>
         </div>
 
-        <label style="margin-top:25px;">
-            Known Total Length (Optional)
-        </label>
+        <label style="margin-top: 25px"> Known Total Length (Optional) </label>
 
         <input
-            type="number"
-            id="totalLength"
-            step="any"
-            placeholder="Leave empty if unknown"
-        >
+          type="number"
+          id="totalLength"
+          step="any"
+          placeholder="Leave empty if unknown"
+        />
 
         <div class="note">
-            If you know the original total length, the calculator will compare
-            it with the slope-based calculation.
+          If you know the original total length, the calculator will compare it
+          with the slope-based calculation.
         </div>
 
-        <button onclick="calculate()">
-            Calculate Missing Length
-        </button>
+        <button onclick="calculate()">Calculate Missing Length</button>
+      </div>
 
-    </div>
+      <!-- RESULTS -->
 
-
-    <!-- RESULTS -->
-
-    <div class="card" id="resultCard" style="display:none;">
-
+      <div class="card" id="resultCard" style="display: none">
         <h2>2. Results</h2>
 
         <div class="results">
+          <div class="result">
+            <div class="label">Larger Piece Slope</div>
+            <div class="value" id="slope1">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Larger Piece Slope</div>
-                <div class="value" id="slope1">—</div>
-            </div>
+          <div class="result">
+            <div class="label">Smaller Piece Slope</div>
+            <div class="value" id="slope2">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Smaller Piece Slope</div>
-                <div class="value" id="slope2">—</div>
-            </div>
+          <div class="result">
+            <div class="label">Average Slope</div>
+            <div class="value" id="avgSlope">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Average Slope</div>
-                <div class="value" id="avgSlope">—</div>
-            </div>
+          <div class="result">
+            <div class="label">Missing Length</div>
+            <div class="value" id="missingLength">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Missing Length</div>
-                <div class="value" id="missingLength">—</div>
-            </div>
+          <div class="result">
+            <div class="label">Reconstructed Total Length</div>
+            <div class="value" id="calculatedTotal">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Reconstructed Total Length</div>
-                <div class="value" id="calculatedTotal">—</div>
-            </div>
+          <div class="result">
+            <div class="label">Taper Angle</div>
+            <div class="value" id="angle">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Taper Angle</div>
-                <div class="value" id="angle">—</div>
-            </div>
+          <div class="result">
+            <div class="label">Diameter at Large End of Gap</div>
+            <div class="value" id="gapStartDiameter">—</div>
+          </div>
 
-            <div class="result">
-                <div class="label">Diameter at Large End of Gap</div>
-                <div class="value" id="gapStartDiameter">—</div>
-            </div>
-
-            <div class="result">
-                <div class="label">Diameter at Small End of Gap</div>
-                <div class="value" id="gapEndDiameter">—</div>
-            </div>
-
+          <div class="result">
+            <div class="label">Diameter at Small End of Gap</div>
+            <div class="value" id="gapEndDiameter">—</div>
+          </div>
         </div>
 
         <div id="slopeMessage"></div>
 
         <div id="totalMessage"></div>
+      </div>
 
-    </div>
+      <!-- FORMULA -->
 
-
-    <!-- FORMULA -->
-
-    <div class="card">
-
+      <div class="card">
         <h2>Calculation Formula</h2>
 
         <div class="formula">
+          Larger piece slope:<br />
+          S₁ = (D₁max − D₁min) / L₁
+          <br /><br />
 
-            Larger piece slope:<br>
-            S₁ = (D₁max − D₁min) / L₁
-            <br><br>
+          Smaller piece slope:<br />
+          S₂ = (D₂max − D₂min) / L₂
+          <br /><br />
 
-            Smaller piece slope:<br>
-            S₂ = (D₂max − D₂min) / L₂
-            <br><br>
+          Average slope:<br />
+          S = (S₁ + S₂) / 2
+          <br /><br />
 
-            Average slope:<br>
-            S = (S₁ + S₂) / 2
-            <br><br>
+          Diameter difference across missing section:<br />
+          ΔD = D₁min − D₂max
+          <br /><br />
 
-            Diameter difference across missing section:<br>
-            ΔD = D₁min − D₂max
-            <br><br>
+          Missing length:<br />
+          ML = ΔD / S
+          <br /><br />
 
-            Missing length:<br>
-            ML = ΔD / S
-            <br><br>
-
-            Total reconstructed length:<br>
-            Total = L₁ + ML + L₂
-
+          Total reconstructed length:<br />
+          Total = L₁ + ML + L₂
         </div>
 
         <div class="important">
-            <strong>Important:</strong>
-            This calculation assumes that the original glass tube had a
-            approximately straight/linear taper. If the tube has a curved,
-            irregular, or manufactured profile, the slope method will only
-            provide an estimate.
+          <strong>Important:</strong>
+          This calculation assumes that the original glass tube had a
+          approximately straight/linear taper. If the tube has a curved,
+          irregular, or manufactured profile, the slope method will only provide
+          an estimate.
         </div>
-
+      </div>
     </div>
 
-</div>
+    <script>
+      function convertToMM(value, unit) {
+        if (unit === "mm") {
+          return value;
+        }
 
+        if (unit === "cm") {
+          return value * 10;
+        }
 
-<script>
+        if (unit === "inch") {
+          return value * 25.4;
+        }
 
-function convertToMM(value, unit) {
-
-    if (unit === "mm") {
         return value;
-    }
+      }
 
-    if (unit === "cm") {
-        return value * 10;
-    }
+      function formatNumber(value, decimals = 3) {
+        if (!isFinite(value)) {
+          return "—";
+        }
 
-    if (unit === "inch") {
-        return value * 25.4;
-    }
+        return Number(value).toFixed(decimals);
+      }
 
-    return value;
-}
+      function updateTubeDiagram(
+        L1,
+        L2,
+        missingLength,
+        D1min,
+        D2max,
+        D1max,
+        D2min,
+      ) {
+        const largeTube = document.getElementById("largeTube");
+        const missingTube = document.getElementById("missingTube");
+        const smallTube = document.getElementById("smallTube");
+        const tubeSummary = document.getElementById("tubeSummary");
 
+        const totalLength = L1 + missingLength + L2;
+        const largeRatio = totalLength > 0 ? L1 / totalLength : 0;
+        const gapRatio = totalLength > 0 ? missingLength / totalLength : 0;
+        const smallRatio = totalLength > 0 ? L2 / totalLength : 0;
 
-function formatNumber(value, decimals = 3) {
+        largeTube.style.flex = `${Math.max(largeRatio * 100, 22)}%`;
+        missingTube.style.flex = `${Math.max(gapRatio * 100, 18)}%`;
+        smallTube.style.flex = `${Math.max(smallRatio * 100, 22)}%`;
 
-    if (!isFinite(value)) {
-        return "—";
-    }
+        largeTube.querySelector(".segment-label").textContent =
+          `L1 = ${formatNumber(L1, 1)} mm`;
+        smallTube.querySelector(".segment-label").textContent =
+          `L2 = ${formatNumber(L2, 1)} mm`;
+        missingTube.textContent = `Missing = ${formatNumber(missingLength, 1)} mm`;
 
-    return Number(value).toFixed(decimals);
-}
+        largeTube.querySelector(".segment-diameter").textContent =
+          `Ø ${formatNumber(D1max, 1)} → ${formatNumber(D1min, 1)} mm`;
+        smallTube.querySelector(".segment-diameter").textContent =
+          `Ø ${formatNumber(D2max, 1)} → ${formatNumber(D2min, 1)} mm`;
 
+        tubeSummary.innerHTML = `Total Length = ${formatNumber(L1, 1)} + ${formatNumber(missingLength, 1)} + ${formatNumber(L2, 1)} = ${formatNumber(totalLength, 1)} mm`;
+      }
 
-function calculate() {
+      function calculate() {
+        // -----------------------------
+        // GET INPUT VALUES
+        // -----------------------------
 
-    // -----------------------------
-    // GET INPUT VALUES
-    // -----------------------------
+        let L1raw = parseFloat(document.getElementById("L1").value);
+        let L2raw = parseFloat(document.getElementById("L2").value);
 
-    let L1raw = parseFloat(document.getElementById("L1").value);
-    let L2raw = parseFloat(document.getElementById("L2").value);
+        let D1maxRaw = parseFloat(document.getElementById("D1max").value);
+        let D1minRaw = parseFloat(document.getElementById("D1min").value);
 
-    let D1maxRaw = parseFloat(document.getElementById("D1max").value);
-    let D1minRaw = parseFloat(document.getElementById("D1min").value);
+        let D2maxRaw = parseFloat(document.getElementById("D2max").value);
+        let D2minRaw = parseFloat(document.getElementById("D2min").value);
 
-    let D2maxRaw = parseFloat(document.getElementById("D2max").value);
-    let D2minRaw = parseFloat(document.getElementById("D2min").value);
+        let totalRaw = parseFloat(document.getElementById("totalLength").value);
 
-    let totalRaw = parseFloat(document.getElementById("totalLength").value);
+        // -----------------------------
+        // VALIDATE
+        // -----------------------------
 
+        if (
+          !isFinite(L1raw) ||
+          !isFinite(L2raw) ||
+          !isFinite(D1maxRaw) ||
+          !isFinite(D1minRaw) ||
+          !isFinite(D2maxRaw) ||
+          !isFinite(D2minRaw)
+        ) {
+          alert("Please enter all required measurements.");
 
-    // -----------------------------
-    // VALIDATE
-    // -----------------------------
+          return;
+        }
 
-    if (
-        !isFinite(L1raw) ||
-        !isFinite(L2raw) ||
-        !isFinite(D1maxRaw) ||
-        !isFinite(D1minRaw) ||
-        !isFinite(D2maxRaw) ||
-        !isFinite(D2minRaw)
-    ) {
+        if (
+          L1raw <= 0 ||
+          L2raw <= 0 ||
+          D1maxRaw <= 0 ||
+          D1minRaw <= 0 ||
+          D2maxRaw <= 0 ||
+          D2minRaw <= 0
+        ) {
+          alert("All measurements must be greater than zero.");
 
-        alert("Please enter all required measurements.");
+          return;
+        }
 
-        return;
-    }
+        // -----------------------------
+        // CONVERT LENGTHS TO MM
+        // -----------------------------
 
-
-    if (
-        L1raw <= 0 ||
-        L2raw <= 0 ||
-        D1maxRaw <= 0 ||
-        D1minRaw <= 0 ||
-        D2maxRaw <= 0 ||
-        D2minRaw <= 0
-    ) {
-
-        alert("All measurements must be greater than zero.");
-
-        return;
-    }
-
-
-    // -----------------------------
-    // CONVERT LENGTHS TO MM
-    // -----------------------------
-
-    let L1 = convertToMM(
-        L1raw,
-        document.getElementById("lengthUnit1").value
-    );
-
-    let L2 = convertToMM(
-        L2raw,
-        document.getElementById("lengthUnit2").value
-    );
-
-
-    // -----------------------------
-    // CONVERT DIAMETERS TO MM
-    // -----------------------------
-
-    let D1max = convertToMM(
-        D1maxRaw,
-        document.getElementById("diamUnit1").value
-    );
-
-    let D1min = convertToMM(
-        D1minRaw,
-        document.getElementById("diamUnit1").value
-    );
-
-    let D2max = convertToMM(
-        D2maxRaw,
-        document.getElementById("diamUnit2").value
-    );
-
-    let D2min = convertToMM(
-        D2minRaw,
-        document.getElementById("diamUnit2").value
-    );
-
-
-    // -----------------------------
-    // CHECK DIAMETER DIRECTION
-    // -----------------------------
-
-    if (D1max <= D1min) {
-
-        alert(
-            "Larger piece: Maximum diameter must be greater than minimum diameter."
+        let L1 = convertToMM(
+          L1raw,
+          document.getElementById("lengthUnit1").value,
         );
 
-        return;
-    }
-
-    if (D2max <= D2min) {
-
-        alert(
-            "Smaller piece: Maximum diameter must be greater than minimum diameter."
+        let L2 = convertToMM(
+          L2raw,
+          document.getElementById("lengthUnit2").value,
         );
 
-        return;
-    }
+        // -----------------------------
+        // CONVERT DIAMETERS TO MM
+        // -----------------------------
 
+        let D1max = convertToMM(
+          D1maxRaw,
+          document.getElementById("diamUnit1").value,
+        );
 
-    // -----------------------------
-    // CALCULATE SLOPES
-    // -----------------------------
+        let D1min = convertToMM(
+          D1minRaw,
+          document.getElementById("diamUnit1").value,
+        );
 
-    let slope1 = (D1max - D1min) / L1;
+        let D2max = convertToMM(
+          D2maxRaw,
+          document.getElementById("diamUnit2").value,
+        );
 
-    let slope2 = (D2max - D2min) / L2;
+        let D2min = convertToMM(
+          D2minRaw,
+          document.getElementById("diamUnit2").value,
+        );
 
-    let averageSlope = (slope1 + slope2) / 2;
+        // -----------------------------
+        // CHECK DIAMETER DIRECTION
+        // -----------------------------
 
+        if (D1max <= D1min) {
+          alert(
+            "Larger piece: Maximum diameter must be greater than minimum diameter.",
+          );
 
-    // -----------------------------
-    // DIAMETER DIFFERENCE
-    // -----------------------------
+          return;
+        }
 
-    let diameterDifference = D1min - D2max;
+        if (D2max <= D2min) {
+          alert(
+            "Smaller piece: Maximum diameter must be greater than minimum diameter.",
+          );
 
+          return;
+        }
 
-    // -----------------------------
-    // MISSING LENGTH
-    // -----------------------------
+        // -----------------------------
+        // CALCULATE SLOPES
+        // -----------------------------
 
-    let missingLength;
+        let slope1 = (D1max - D1min) / L1;
 
-    if (diameterDifference > 0) {
+        let slope2 = (D2max - D2min) / L2;
 
-        missingLength = diameterDifference / averageSlope;
+        let averageSlope = (slope1 + slope2) / 2;
 
-    } else {
+        // -----------------------------
+        // DIAMETER DIFFERENCE
+        // -----------------------------
 
-        /*
+        let diameterDifference = D1min - D2max;
+
+        // -----------------------------
+        // MISSING LENGTH
+        // -----------------------------
+
+        let missingLength;
+
+        if (diameterDifference > 0) {
+          missingLength = diameterDifference / averageSlope;
+        } else {
+          /*
          If D1min and D2max are equal,
          there is no diameter change between
          the two pieces.
         */
 
-        if (Math.abs(diameterDifference) < 0.000001) {
-
+          if (Math.abs(diameterDifference) < 0.000001) {
             missingLength = 0;
-
-        } else {
-
+          } else {
             alert(
-                "The diameter relationship does not match a continuously decreasing taper.\n\n" +
-                "Larger piece minimum diameter: " + D1min.toFixed(3) + " mm\n" +
-                "Smaller piece maximum diameter: " + D2max.toFixed(3) + " mm"
+              "The diameter relationship does not match a continuously decreasing taper.\n\n" +
+                "Larger piece minimum diameter: " +
+                D1min.toFixed(3) +
+                " mm\n" +
+                "Smaller piece maximum diameter: " +
+                D2max.toFixed(3) +
+                " mm",
             );
 
             return;
+          }
         }
-    }
 
+        // -----------------------------
+        // TOTAL LENGTH
+        // -----------------------------
 
-    // -----------------------------
-    // TOTAL LENGTH
-    // -----------------------------
+        let calculatedTotal = L1 + missingLength + L2;
 
-    let calculatedTotal = L1 + missingLength + L2;
+        // -----------------------------
+        // TAPER ANGLE
+        // -----------------------------
 
-
-    // -----------------------------
-    // TAPER ANGLE
-    // -----------------------------
-
-    /*
+        /*
        Diameter changes at twice the radius.
 
        tan(angle) = radius change / length
@@ -719,157 +748,118 @@ function calculate() {
        angle = atan((diameter change / 2) / length)
     */
 
-    let angleRadians = Math.atan(averageSlope / 2);
+        let angleRadians = Math.atan(averageSlope / 2);
 
-    let angleDegrees = angleRadians * 180 / Math.PI;
+        let angleDegrees = (angleRadians * 180) / Math.PI;
 
+        // -----------------------------
+        // DISPLAY RESULTS
+        // -----------------------------
 
-    // -----------------------------
-    // DISPLAY RESULTS
-    // -----------------------------
+        document.getElementById("resultCard").style.display = "block";
 
-    document.getElementById("resultCard").style.display = "block";
+        document.getElementById("slope1").innerHTML =
+          formatNumber(slope1, 5) + " mm/mm";
 
-    document.getElementById("slope1").innerHTML =
-        formatNumber(slope1, 5) + " mm/mm";
+        document.getElementById("slope2").innerHTML =
+          formatNumber(slope2, 5) + " mm/mm";
 
-    document.getElementById("slope2").innerHTML =
-        formatNumber(slope2, 5) + " mm/mm";
+        document.getElementById("avgSlope").innerHTML =
+          formatNumber(averageSlope, 5) + " mm/mm";
 
-    document.getElementById("avgSlope").innerHTML =
-        formatNumber(averageSlope, 5) + " mm/mm";
+        document.getElementById("missingLength").innerHTML =
+          formatNumber(missingLength, 2) + " mm";
 
-    document.getElementById("missingLength").innerHTML =
-        formatNumber(missingLength, 2) + " mm";
+        document.getElementById("calculatedTotal").innerHTML =
+          formatNumber(calculatedTotal, 2) + " mm";
 
-    document.getElementById("calculatedTotal").innerHTML =
-        formatNumber(calculatedTotal, 2) + " mm";
+        document.getElementById("angle").innerHTML =
+          formatNumber(angleDegrees, 4) + "°";
 
-    document.getElementById("angle").innerHTML =
-        formatNumber(angleDegrees, 4) + "°";
+        document.getElementById("gapStartDiameter").innerHTML =
+          formatNumber(D1min, 2) + " mm";
 
-    document.getElementById("gapStartDiameter").innerHTML =
-        formatNumber(D1min, 2) + " mm";
+        document.getElementById("gapEndDiameter").innerHTML =
+          formatNumber(D2max, 2) + " mm";
 
-    document.getElementById("gapEndDiameter").innerHTML =
-        formatNumber(D2max, 2) + " mm";
+        updateTubeDiagram(L1, L2, missingLength, D1min, D2max, D1max, D2min);
 
+        // -----------------------------
+        // SLOPE COMPARISON
+        // -----------------------------
 
-    // -----------------------------
-    // SLOPE COMPARISON
-    // -----------------------------
+        let differencePercent =
+          (Math.abs(slope1 - slope2) / ((slope1 + slope2) / 2)) * 100;
 
-    let differencePercent =
-        Math.abs(slope1 - slope2) /
-        ((slope1 + slope2) / 2) *
-        100;
+        let slopeMessage = document.getElementById("slopeMessage");
 
+        if (differencePercent <= 5) {
+          slopeMessage.className = "success";
 
-    let slopeMessage =
-        document.getElementById("slopeMessage");
-
-
-    if (differencePercent <= 5) {
-
-        slopeMessage.className = "success";
-
-        slopeMessage.innerHTML =
+          slopeMessage.innerHTML =
             "<strong>Good agreement:</strong> " +
             "The two pieces have slopes within " +
             formatNumber(differencePercent, 2) +
             "%. This strongly supports using a common taper.";
+        } else if (differencePercent <= 15) {
+          slopeMessage.className = "important";
 
-    }
-
-    else if (differencePercent <= 15) {
-
-        slopeMessage.className = "important";
-
-        slopeMessage.innerHTML =
+          slopeMessage.innerHTML =
             "<strong>Moderate difference:</strong> " +
             "The slopes differ by " +
             formatNumber(differencePercent, 2) +
             "%. The missing length is an estimate.";
+        } else {
+          slopeMessage.className = "warning";
 
-    }
-
-    else {
-
-        slopeMessage.className = "warning";
-
-        slopeMessage.innerHTML =
+          slopeMessage.innerHTML =
             "<strong>Large slope difference:</strong> " +
             "The slopes differ by " +
             formatNumber(differencePercent, 2) +
             "%. Check your measurements or consider that the tube may not have a uniform taper.";
-    }
+        }
 
+        // -----------------------------
+        // COMPARE KNOWN TOTAL
+        // -----------------------------
 
-    // -----------------------------
-    // COMPARE KNOWN TOTAL
-    // -----------------------------
+        let totalMessage = document.getElementById("totalMessage");
 
-    let totalMessage =
-        document.getElementById("totalMessage");
+        if (isFinite(totalRaw) && totalRaw > 0) {
+          let totalUnit = document.getElementById("lengthUnit1").value;
 
+          let knownTotalMM = convertToMM(totalRaw, totalUnit);
 
-    if (isFinite(totalRaw) && totalRaw > 0) {
+          let difference = knownTotalMM - calculatedTotal;
 
-        let totalUnit =
-            document.getElementById("lengthUnit1").value;
+          let percentage = (Math.abs(difference) / knownTotalMM) * 100;
 
-        let knownTotalMM =
-            convertToMM(totalRaw, totalUnit);
+          totalMessage.className = percentage <= 2 ? "success" : "important";
 
-
-        let difference =
-            knownTotalMM - calculatedTotal;
-
-
-        let percentage =
-            Math.abs(difference) /
-            knownTotalMM *
-            100;
-
-
-        totalMessage.className =
-            percentage <= 2 ? "success" : "important";
-
-
-        totalMessage.innerHTML =
+          totalMessage.innerHTML =
             "<strong>Known total comparison:</strong><br>" +
-
             "Known total: " +
             formatNumber(knownTotalMM, 2) +
             " mm<br>" +
-
             "Calculated total: " +
             formatNumber(calculatedTotal, 2) +
             " mm<br>" +
-
             "Difference: " +
             formatNumber(difference, 2) +
             " mm (" +
             formatNumber(percentage, 2) +
             "%)";
-    }
+        } else {
+          totalMessage.innerHTML = "";
+          totalMessage.className = "";
+        }
 
-    else {
+        // Scroll to results
 
-        totalMessage.innerHTML = "";
-        totalMessage.className = "";
-    }
-
-
-    // Scroll to results
-
-    document.getElementById("resultCard")
-        .scrollIntoView({
-            behavior: "smooth"
+        document.getElementById("resultCard").scrollIntoView({
+          behavior: "smooth",
         });
-}
-
-</script>
-
-</body>
+      }
+    </script>
+  </body>
 </html>
