@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Archaeological Glass Bead 3D Viewer</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #111827;
+        color: #e5e7eb;
+        overflow: hidden;
+      }
+      #app {
+        display: flex;
+        height: 100vh;
+      }
+      #panel {
+        width: 320px;
+        padding: 20px;
+        background: #1f2937;
+        overflow-y: auto;
+        border-right: 1px solid #374151;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 18px;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        margin: 14px 0 6px;
+        color: #cbd5e1;
+      }
+      input,
+      select,
+      button {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 7px;
+        border: 1px solid #4b5563;
+        background: #111827;
+        color: #f9fafb;
+      }
+      input[type="color"] {
+        height: 42px;
+        padding: 3px;
+      }
+      button {
+        margin-top: 16px;
+        background: #374151;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button:hover {
+        background: #4b5563;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .info {
+        margin-top: 18px;
+        padding: 12px;
+        background: #111827;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      #viewer {
+        flex: 1;
+        position: relative;
+        min-width: 0;
+      }
+      #canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #hint {
+        position: absolute;
+        left: 15px;
+        bottom: 15px;
+        padding: 8px 11px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 6px;
+        font-size: 12px;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <aside id="panel">
+        <h1>3D Glass Bead Viewer</h1>
+
+        <label>Bead Type</label>
+        <select id="type">
+          <option value="annular">Annular / Ring</option>
+          <option value="cylindrical">Cylindrical</option>
+          <option value="barrel">Barrel</option>
+          <option value="spherical">Spherical</option>
+          <option value="biconical">Biconical</option>
+          <option value="oblate">Oblate / Flattened</option>
+        </select>
+
+        <label>Outer Diameter (mm)</label>
+        <input id="outer" type="number" value="10" min="0.1" step="0.01" />
+
+        <label>Hole Diameter (mm)</label>
+        <input id="hole" type="number" value="3" min="0" step="0.01" />
+
+        <label>Width / Thickness (mm)</label>
+        <input id="width" type="number" value="6" min="0.1" step="0.01" />
+
+        <label>Colour</label>
+        <input id="color" type="color" value="#2e8b78" />
+
+        <label>Magnification</label>
+        <select id="scale">
+          <option value="1">1×</option>
+          <option value="10" selected>10×</option>
+          <option value="50">50×</option>
+          <option value="100">100×</option>
+          <option value="500">500×</option>
+          <option value="1000">1000×</option>
+        </select>
+
+        <div class="row">
+          <button id="update">Update Bead</button>
+          <button id="reset">Reset View</button>
+        </div>
+
+        <div class="info" id="info"></div>
+      </aside>
+
+      <main id="viewer">
+        <canvas id="canvas"></canvas>
+        <div id="hint">Drag to rotate • Wheel/pinch to zoom</div>
+      </main>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
+
+      const canvas = document.getElementById("canvas");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: false,
+      });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      renderer.shadowMap.enabled = true;
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x101827);
+
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 10000);
+      camera.position.set(18, 13, 22);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+
+      scene.add(new THREE.HemisphereLight(0xddeeff, 0x202020, 2.2));
+
+      const key = new THREE.DirectionalLight(0xffffff, 3.5);
+      key.position.set(8, 15, 12);
+      key.castShadow = true;
+      scene.add(key);
+
+      const fill = new THREE.DirectionalLight(0x99bbff, 1.5);
+      fill.position.set(-10, 5, -8);
+      scene.add(fill);
+
+      const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(35, 64),
+        new THREE.MeshStandardMaterial({
+          color: 0x182235,
+          roughness: 0.72,
+          metalness: 0,
+        }),
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -6;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      let beadGroup = new THREE.Group();
+      scene.add(beadGroup);
+
+      function makeGlassMaterial(hex) {
+        return new THREE.MeshPhysicalMaterial({
+          color: hex,
+          roughness: 0.08,
+          metalness: 0,
+          transmission: 0.45,
+          thickness: 1.2,
+          ior: 1.5,
+          transparent: true,
+          opacity: 0.88,
+          clearcoat: 0.55,
+          clearcoatRoughness: 0.08,
+          side: THREE.DoubleSide,
+        });
+      }
+
+      // Creates a ring-like bead from a radial profile.
+      // y is the bead width axis; x/z form the circular diameter.
+      function profileRevolve(points, segments = 96) {
+        const verts = [],
+          indices = [];
+        for (let i = 0; i <= segments; i++) {
+          const a = (i / segments) * Math.PI * 2;
+          const c = Math.cos(a),
+            s = Math.sin(a);
+          for (const [r, y] of points) verts.push(r * c, y, r * s);
+        }
+        const n = points.length;
+        for (let i = 0; i < segments; i++) {
+          for (let j = 0; j < n - 1; j++) {
+            const a = i * n + j,
+              b = (i + 1) * n + j;
+            indices.push(a, b, a + 1, b, b + 1, a + 1);
+          }
+        }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+        g.setIndex(indices);
+        g.computeVertexNormals();
+        return g;
+      }
+
+      function createBead() {
+        beadGroup.clear();
+
+        const type = document.getElementById("type").value;
+        let D = parseFloat(document.getElementById("outer").value);
+        let H = parseFloat(document.getElementById("hole").value);
+        let W = parseFloat(document.getElementById("width").value);
+        const hex = document.getElementById("color").value;
+        const scale = parseFloat(document.getElementById("scale").value);
+
+        if (!Number.isFinite(D) || D <= 0) D = 10;
+        if (!Number.isFinite(H) || H < 0) H = 0;
+        if (!Number.isFinite(W) || W <= 0) W = 6;
+        H = Math.min(H, D * 0.98);
+
+        const R = D / 2,
+          r = Math.max(H / 2, 0.001),
+          half = W / 2;
+        let mesh;
+
+        // For all annular/ring-like forms, build an accurate revolved radial section.
+        let pts;
+        if (type === "annular" || type === "cylindrical") {
+          const edge = Math.min(0.45, (R - r) * 0.25, half * 0.25);
+          pts = [
+            [r, -half + edge],
+            [r, half - edge],
+            [r + edge, half],
+            [R - edge, half],
+            [R, half - edge],
+            [R, -half + edge],
+            [R - edge, -half],
+            [r + edge, -half],
+          ];
+        } else if (type === "barrel") {
+          const bulge = (R - r) * 0.18;
+          pts = [
+            [r, -half],
+            [r, half],
+            [R - edgeSafe(R - r), half],
+            [R + bulge, 0],
+            [R - edgeSafe(R - r), -half],
+            [r, -half],
+          ];
+        } else if (type === "biconical") {
+          pts = [
+            [r, -half],
+            [R, 0],
+            [r, half],
+          ];
+        } else if (type === "oblate") {
+          const h = half * 0.62;
+          pts = [
+            [r, -h],
+            [r, h],
+            [R, h * 0.8],
+            [R + 0.15, h * 0.35],
+            [R, 0],
+            [R, -h * 0.35],
+            [R, -h * 0.8],
+          ];
+        } else {
+          // Spherical bead with a central cylindrical hole: smooth toroidal approximation.
+          const mid = (R + r) / 2,
+            tube = (R - r) / 2;
+          pts = [];
+          for (let i = 0; i <= 48; i++) {
+            const a = -Math.PI / 2 + i * Math.PI;
+            pts.push([mid + tube * Math.cos(a), tube * Math.sin(a)]);
+          }
+        }
+
+        function edgeSafe(v) {
+          return Math.max(0.08, Math.min(0.35, v * 0.2));
+        }
+
+        const geom = profileRevolve(pts, 128);
+        mesh = new THREE.Mesh(geom, makeGlassMaterial(hex));
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        beadGroup.add(mesh);
+
+        // Put the bead upright with its hole axis vertical.
+        beadGroup.rotation.x = Math.PI / 2;
+
+        // Magnification is display-only; dimensions remain real mm.
+        const visualScale = scale * 0.18;
+        beadGroup.scale.setScalar(visualScale);
+
+        const displayD = (D * scale).toFixed(2);
+        document.getElementById("info").innerHTML =
+          `<b>Measured dimensions</b><br>` +
+          `Outer diameter: ${D.toFixed(2)} mm<br>` +
+          `Hole diameter: ${H.toFixed(2)} mm<br>` +
+          `Width: ${W.toFixed(2)} mm<br>` +
+          `<b>Display</b><br>` +
+          `Magnification: ${scale}×<br>` +
+          `Displayed diameter: ${displayD} mm equivalent`;
+      }
+
+      function resetView() {
+        camera.position.set(18, 13, 22);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      }
+
+      document.getElementById("update").onclick = createBead;
+      document.getElementById("reset").onclick = resetView;
+      for (const id of ["type", "outer", "hole", "width", "color", "scale"])
+        document.getElementById(id).addEventListener("change", createBead);
+
+      function resize() {
+        const w = canvas.clientWidth,
+          h = canvas.clientHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener("resize", resize);
+
+      createBead();
+      resize();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>
