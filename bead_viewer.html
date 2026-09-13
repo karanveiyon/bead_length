@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Archaeological Glass Bead 3D Viewer</title>
+    <title>Manikollai - Glass Bead 3D Viewer</title>
     <style>
       * {
         box-sizing: border-box;
@@ -64,6 +64,43 @@
         grid-template-columns: 1fr 1fr;
         gap: 8px;
       }
+
+      .munsell-title {
+        margin-top: 16px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #f3f4f6;
+      }
+      .munsell-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr;
+        gap: 7px;
+      }
+      .munsell-grid label { margin-top: 8px; }
+      .munsell-code {
+        margin-top: 9px;
+        padding: 9px 10px;
+        border-radius: 7px;
+        background: #111827;
+        font-size: 13px;
+      }
+      .swatch {
+        margin-top: 8px;
+        height: 30px;
+        border-radius: 6px;
+        border: 1px solid #6b7280;
+      }
+      .approx {
+        margin-top: 5px;
+        font-size: 11px;
+        color: #9ca3af;
+      }
+      #download {
+        background: #2563eb;
+      }
+      #download:hover {
+        background: #1d4ed8;
+      }
       .info {
         margin-top: 18px;
         padding: 12px;
@@ -97,7 +134,9 @@
   <body>
     <div id="app">
       <aside id="panel">
-        <h1>3D Glass Bead Viewer</h1>
+        <h1>Manikollai - 3D Glass Bead Viewer</h1>
+        <label>Specimen / Bead Name</label>
+        <input id="name" type="text" value="Bead-001" placeholder="e.g. Manikollai Bead 01" />
 
         <label>Bead Type</label>
         <select id="type">
@@ -118,8 +157,39 @@
         <label>Width / Thickness (mm)</label>
         <input id="width" type="number" value="6" min="0.1" step="0.01" />
 
-        <label>Colour</label>
-        <input id="color" type="color" value="#2e8b78" />
+        <div class="munsell-title">Munsell Colour</div>
+        <div class="munsell-grid">
+          <div>
+            <label>Hue</label>
+            <select id="mHue">
+              <option>5R</option><option>10R</option>
+              <option>5YR</option><option>10YR</option>
+              <option>5Y</option><option>10Y</option>
+              <option>5GY</option><option>10GY</option>
+              <option>5G</option><option selected>10G</option>
+              <option>5BG</option><option>10BG</option>
+              <option>5B</option><option>10B</option>
+              <option>5PB</option><option>10PB</option>
+              <option>5P</option><option>10P</option>
+              <option>5RP</option><option>10RP</option>
+              <option>N</option>
+            </select>
+          </div>
+          <div>
+            <label>Value</label>
+            <input id="mValue" type="number" value="5" min="0" max="10" step="0.5" />
+          </div>
+          <div>
+            <label>Chroma</label>
+            <input id="mChroma" type="number" value="6" min="0" max="20" step="1" />
+          </div>
+        </div>
+
+        <div class="munsell-code">
+          Munsell: <strong id="munsellCode">10G 5/6</strong>
+        </div>
+        <div class="swatch" id="swatch"></div>
+        <div class="approx">Approximate screen colour: <span id="hexValue">#3A8F63</span></div>
 
         <label>Magnification</label>
         <select id="scale">
@@ -135,6 +205,7 @@
           <button id="update">Update Bead</button>
           <button id="reset">Reset View</button>
         </div>
+        <button id="download">Download Image with Label</button>
 
         <div class="info" id="info"></div>
       </aside>
@@ -162,6 +233,7 @@
         canvas,
         antialias: true,
         alpha: false,
+        preserveDrawingBuffer: true,
       });
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
@@ -206,6 +278,68 @@
 
       let beadGroup = new THREE.Group();
       scene.add(beadGroup);
+
+
+      // Approximate Munsell H/V/C -> sRGB.
+      // This is a renderer approximation, not a substitute for a physical Munsell chip.
+      const MUNSELL_HUES = [
+        ["5R", 0], ["10R", 15], ["5YR", 30], ["10YR", 45],
+        ["5Y", 60], ["10Y", 75], ["5GY", 90], ["10GY", 105],
+        ["5G", 120], ["10G", 135], ["5BG", 150], ["10BG", 165],
+        ["5B", 180], ["10B", 195], ["5PB", 210], ["10PB", 225],
+        ["5P", 240], ["10P", 255], ["5RP", 270], ["10RP", 285],
+        ["N", 0]
+      ];
+
+      function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+      function munsellToHex(hue, value, chroma) {
+        if (hue === "N" || chroma <= 0) {
+          const v = clamp01(value / 10);
+          const c = Math.round(v * 255);
+          return "#" + [c,c,c].map(x => x.toString(16).padStart(2,"0")).join("");
+        }
+
+        const base = MUNSELL_HUES.find(x => x[0] === hue)?.[1] ?? 120;
+        // Approximate screen mapping: Munsell value controls lightness,
+        // chroma controls saturation, hue controls hue.
+        const h = (base / 360 + 0.5) % 1;
+        const s = clamp01(0.16 + chroma / 22);
+        const l = clamp01(0.12 + (value / 10) * 0.62);
+
+        const rgb = hslToRgb(h, s, l);
+        return "#" + rgb.map(x => Math.round(x * 255).toString(16).padStart(2,"0")).join("");
+      }
+
+      function hslToRgb(h, s, l) {
+        if (s === 0) return [l,l,l];
+        const hue2rgb = (p,q,t) => {
+          if(t<0)t+=1; if(t>1)t-=1;
+          if(t<1/6)return p+(q-p)*6*t;
+          if(t<1/2)return q;
+          if(t<2/3)return p+(q-p)*(2/3-t)*6;
+          return p;
+        };
+        const q=l<0.5 ? l*(1+s) : l+s-l*s;
+        const p=2*l-q;
+        return [hue2rgb(p,q,h+1/3),hue2rgb(p,q,h),hue2rgb(p,q,h-1/3)];
+      }
+
+      function getMunsell() {
+        const hue = document.getElementById("mHue").value;
+        const value = Math.max(0, Math.min(10, parseFloat(document.getElementById("mValue").value) || 5));
+        const chroma = Math.max(0, Math.min(20, parseFloat(document.getElementById("mChroma").value) || 0));
+        const hex = munsellToHex(hue, value, chroma);
+        return { hue, value, chroma, code: hue === "N" ? `N ${value}` : `${hue} ${value}/${chroma}`, hex };
+      }
+
+      function updateMunsellUI() {
+        const m = getMunsell();
+        document.getElementById("munsellCode").textContent = m.code;
+        document.getElementById("swatch").style.background = m.hex;
+        document.getElementById("hexValue").textContent = m.hex.toUpperCase();
+        return m;
+      }
 
       function makeGlassMaterial(hex) {
         return new THREE.MeshPhysicalMaterial({
@@ -256,7 +390,8 @@
         let D = parseFloat(document.getElementById("outer").value);
         let H = parseFloat(document.getElementById("hole").value);
         let W = parseFloat(document.getElementById("width").value);
-        const hex = document.getElementById("color").value;
+        const munsell = getMunsell();
+        const hex = munsell.hex;
         const scale = parseFloat(document.getElementById("scale").value);
 
         if (!Number.isFinite(D) || D <= 0) D = 10;
@@ -339,14 +474,73 @@
         beadGroup.scale.setScalar(visualScale);
 
         const displayD = (D * scale).toFixed(2);
+        const specimenName = document.getElementById("name").value.trim() || "Unnamed Bead";
+        updateMunsellUI();
         document.getElementById("info").innerHTML =
+          `<b>${escapeHtml(specimenName)}</b><br>` +
           `<b>Measured dimensions</b><br>` +
           `Outer diameter: ${D.toFixed(2)} mm<br>` +
           `Hole diameter: ${H.toFixed(2)} mm<br>` +
           `Width: ${W.toFixed(2)} mm<br>` +
+          `Munsell colour: ${munsell.code}<br>` +
           `<b>Display</b><br>` +
           `Magnification: ${scale}×<br>` +
           `Displayed diameter: ${displayD} mm equivalent`;
+      }
+
+
+      function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, ch => ({
+          "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+        }[ch]));
+      }
+
+      function downloadImage() {
+        const type = document.getElementById("type").selectedOptions[0].text;
+        const name = document.getElementById("name").value.trim() || "Unnamed Bead";
+        const D = parseFloat(document.getElementById("outer").value) || 0;
+        const H = parseFloat(document.getElementById("hole").value) || 0;
+        const W = parseFloat(document.getElementById("width").value) || 0;
+        const scale = parseFloat(document.getElementById("scale").value) || 1;
+        const m = getMunsell();
+
+        renderer.render(scene, camera);
+
+        const exportCanvas = document.createElement("canvas");
+        const margin = 55;
+        const labelHeight = 205;
+        exportCanvas.width = canvas.width + margin * 2;
+        exportCanvas.height = canvas.height + margin * 2 + labelHeight;
+        const ctx = exportCanvas.getContext("2d");
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        ctx.drawImage(canvas, margin, margin, canvas.width, canvas.height);
+
+        const y = margin + canvas.height + 32;
+        ctx.fillStyle = "#111827";
+        ctx.font = "bold 27px Arial";
+        ctx.fillText(name, margin, y);
+
+        ctx.font = "16px Arial";
+        ctx.fillText(`Bead type: ${type}`, margin, y + 31);
+        ctx.fillText(`Outer diameter: ${D.toFixed(2)} mm`, margin, y + 57);
+        ctx.fillText(`Hole diameter: ${H.toFixed(2)} mm`, margin, y + 83);
+        ctx.fillText(`Width / thickness: ${W.toFixed(2)} mm`, margin, y + 109);
+        ctx.fillText(`Munsell colour: ${m.code}`, margin, y + 135);
+        ctx.fillText(`Magnification: ${scale}×`, margin, y + 161);
+
+        ctx.fillStyle = m.hex;
+        ctx.fillRect(exportCanvas.width - margin - 105, y + 10, 105, 35);
+        ctx.strokeStyle = "#444";
+        ctx.strokeRect(exportCanvas.width - margin - 105, y + 10, 105, 35);
+
+        const safeName = name.replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "bead";
+        const a = document.createElement("a");
+        a.download = `${safeName}_3D_bead.png`;
+        a.href = exportCanvas.toDataURL("image/png");
+        a.click();
       }
 
       function resetView() {
@@ -357,8 +551,17 @@
 
       document.getElementById("update").onclick = createBead;
       document.getElementById("reset").onclick = resetView;
-      for (const id of ["type", "outer", "hole", "width", "color", "scale"])
+      document.getElementById("download").onclick = downloadImage;
+
+      for (const id of ["type", "outer", "hole", "width", "scale", "name"])
         document.getElementById(id).addEventListener("change", createBead);
+
+      for (const id of ["mHue", "mValue", "mChroma"]) {
+        document.getElementById(id).addEventListener("input", () => {
+          updateMunsellUI();
+          createBead();
+        });
+      }
 
       function resize() {
         const w = canvas.clientWidth,
@@ -369,6 +572,7 @@
       }
       window.addEventListener("resize", resize);
 
+      updateMunsellUI();
       createBead();
       resize();
 
